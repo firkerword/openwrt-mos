@@ -1,0 +1,51 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: go
+  release:
+    types:
+      - published
+
+jobs:
+  build:
+    name: Build ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        arch:
+          - x86_64
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Build
+        uses: sbwml/openwrt-gh-action-sdk@go1.20
+        env:
+          ARCH: ${{ matrix.arch }}-openwrt-21.02
+          FEEDNAME: packages_ci
+          PACKAGES: luci-app-mosdns
+          NO_REFRESH_CHECK: true
+      - name: Time Work
+        run:
+          echo "TAG_TIME=$(date +"%Y%m%d")" >> $GITHUB_ENV
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.arch }}
+          path: bin/packages/${{ matrix.arch }}/packages_ci/*.ipk
+      - name: Upload packages
+        uses: ncipollo/release-action@v1
+        with:
+          name: "mosdns v5-${{ matrix.arch }}-${{ env.TAG_TIME }}"
+          token: ${{ secrets.workflow_token }}
+          allowUpdates: true
+          replacesArtifacts: true
+          tag: "mosdns-${{ env.TAG_TIME }}"
+          body: |
+            luci-app-mosdns v5 for OpemWrt.
+          artifacts: "bin/packages/${{ matrix.arch }}/packages_ci/*.ipk"
