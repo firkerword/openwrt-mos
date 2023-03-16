@@ -8,7 +8,7 @@ PKG_NAME:=mosdns
 PKG_VERSION:=ac99eb1
 PKG_RELEASE:=$(AUTORELEASE)
 
-PKG_SOURCE:=mosdns-$(PKG_VERSION).tar.gz
+PKG_SOURCE:=$(PKG_NAME)-$(PKG_VERSION).tar.gz
 PKG_SOURCE_URL:=https://codeload.github.com/IrineSistiana/mosdns/tar.gz/$(PKG_VERSION)?
 PKG_HASH:=skip
 
@@ -18,9 +18,8 @@ PKG_MAINTAINER:=Tianling Shen <cnsztl@immortalwrt.org>
 
 PKG_CONFIG_DEPENDS:= \
 	CONFIG_MOSDNS_COMPRESS_GOPROXY \
-	CONFIG_MOSDNS_COMPRESS_UPX
 
-PKG_BUILD_DEPENDS:=golang/host upx/host
+PKG_BUILD_DEPENDS:=golang/host
 PKG_BUILD_PARALLEL:=1
 PKG_USE_MIPS16:=0
 
@@ -53,10 +52,6 @@ define Package/mosdns/config
 config MOSDNS_COMPRESS_GOPROXY
 	bool "Compiling with GOPROXY proxy"
 	default n
-
-config MOSDNS_COMPRESS_UPX
-	bool "Compress executable files with UPX"
-	default y
 endef
 
 ifeq ($(CONFIG_MOSDNS_COMPRESS_GOPROXY),y)
@@ -72,9 +67,6 @@ GO_PKG_TARGET_VARS:=$(filter-out CGO_ENABLED=%,$(GO_PKG_TARGET_VARS)) CGO_ENABLE
 
 define Build/Compile
 	$(call GoPackage/Build/Compile)
-ifneq ($(CONFIG_MOSDNS_COMPRESS_UPX),)
-	$(STAGING_DIR_HOST)/bin/upx --lzma --best $(GO_PKG_BUILD_BIN_DIR)/mosdns
-endif
 endef
 
 define Package/mosdns/install
