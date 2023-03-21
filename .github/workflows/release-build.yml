@@ -73,3 +73,4 @@ jobs:
           replacesArtifacts: true
           prerelease: true
           artifacts: "bin/packages/${{ matrix.arch }}/packages_ci/*.ipk"
+
